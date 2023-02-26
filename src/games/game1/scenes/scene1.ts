@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-class Scene1 extends Phaser.Scene {
+export default class Scene1 extends Phaser.Scene {
     constructor() {
         super('GameScene');
     }
@@ -35,5 +35,3 @@ class Scene1 extends Phaser.Scene {
         emitter.startFollow(logo);
     }
 }
-
-export default Scene1;

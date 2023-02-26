@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import Scene1 from './scenes/scene1';
+import MainMenu from './scenes/MainMenu';
 
 const config = {
     parent: 'gameParent',
@@ -12,7 +12,7 @@ const config = {
             gravity: { y: 200 }
         }
     },
-    scene: [Scene1]
+    scene: [MainMenu]
 };
 
 export default config;
