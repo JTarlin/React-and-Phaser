@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import MainMenu from './scenes/MainMenu';
+import Scene1 from './scenes/Scene1';
 
 
-const config = {
+export const config = {
     parent: 'gameParent',
     type: Phaser.AUTO,
     width: 800,
@@ -16,4 +17,4 @@ const config = {
     scene: MainMenu
 };
 
-export default config;
+export const scenes = [MainMenu, Scene1];

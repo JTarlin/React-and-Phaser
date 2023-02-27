@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import Scene1 from './scenes/scene2';
 
-const config = {
+export const config = {
     parent: 'gameParent',
     type: Phaser.AUTO,
     width: 800,
@@ -15,4 +15,4 @@ const config = {
     scene: [Scene1]
 };
 
-export default config;
+export const scenes = [Scene1]

@@ -4,10 +4,10 @@ import Phaser from 'phaser';
 import Scene1 from './Scene1';
 
 export default class MainMenu extends Phaser.Scene {
-    init () {
-        this.scene.add('Scene1', Scene1);
-        this.scene.add('MainMenu', MainMenu);
-    }
+    // init () {
+    //     this.scene.add('Scene1', Scene1);
+    //     this.scene.add('MainMenu', MainMenu);
+    // }
 
     create ()
     {
@@ -20,7 +20,7 @@ export default class MainMenu extends Phaser.Scene {
                 color: "#ffffff",
                 fontStyle: "bold"
             }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5, 0.5);
         text.setFontSize(20);
 
         text.setInteractive();

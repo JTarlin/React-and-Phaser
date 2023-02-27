@@ -42,7 +42,7 @@ export default class Scene1 extends Phaser.Scene {
                 color: "#ffffff",
                 fontStyle: "bold"
             }
-        ).setOrigin(0.5);
+        ).setOrigin(0.5, 0.5);
         menuBtn.setFontSize(20);
 
         menuBtn.setInteractive();
