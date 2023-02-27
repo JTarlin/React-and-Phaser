@@ -1,9 +1,6 @@
 import Phaser from 'phaser';
 
 export default class Scene1 extends Phaser.Scene {
-    constructor() {
-        super('GameScene');
-    }
 
     preload ()
     {
@@ -16,6 +13,8 @@ export default class Scene1 extends Phaser.Scene {
     
     create ()
     {
+
+        //fancy phaser animation
         this.add.image(400, 300, 'sky');
     
         var particles = this.add.particles('red');
@@ -33,5 +32,21 @@ export default class Scene1 extends Phaser.Scene {
         logo.setCollideWorldBounds(true);
     
         emitter.startFollow(logo);
+
+        //The button to send us to main menu
+        var menuBtn = this.add.text(
+            25, 
+            25, 
+            'Menu', 
+            {
+                color: "#ffffff",
+                fontStyle: "bold"
+            }
+        ).setOrigin(0.5);
+        menuBtn.setFontSize(20);
+
+        menuBtn.setInteractive();
+
+        menuBtn.on('pointerup', ()=>{this.scene.start('MainMenu')});
     }
 }
