@@ -8,11 +8,12 @@ export const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
+    scale: {
+        mode: Phaser.Scale.NONE,
+    },
+    backgroundColor: '#3498db',
     physics: {
         default: 'arcade',
-        arcade: {
-            gravity: { y: 200 }
-        }
     },
     scene: MainMenu
 };

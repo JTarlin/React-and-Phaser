@@ -1,5 +1,7 @@
 import {useEffect} from 'react';
 
+import './gameComponent.scss';
+
 interface GameComponentProps {
     gameConfig: Phaser.Types.Core.GameConfig,
     sceneList: (typeof Phaser.Scene)[],

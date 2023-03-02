@@ -1,13 +1,6 @@
 import Phaser from 'phaser';
 
-//scene imports
-import Scene1 from './Scene1';
-
 export default class MainMenu extends Phaser.Scene {
-    // init () {
-    //     this.scene.add('Scene1', Scene1);
-    //     this.scene.add('MainMenu', MainMenu);
-    // }
 
     create ()
     {
@@ -25,6 +18,9 @@ export default class MainMenu extends Phaser.Scene {
 
         text.setInteractive();
 
-        text.on('pointerup', ()=>{this.scene.start('Scene1')});
+        text.on('pointerup', ()=>{
+            console.log('Starting scene 1');
+            this.scene.start('Scene1');
+        });
     }
 }

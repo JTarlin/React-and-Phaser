@@ -2,36 +2,42 @@ import Phaser from 'phaser';
 
 export default class Scene1 extends Phaser.Scene {
 
+    //player object
+    private player!: Phaser.GameObjects.Sprite;
+
+    //controls
+    private arrow!: Phaser.Types.Input.Keyboard.CursorKeys;
+
+    //walls
+    private walls!: Phaser.Physics.Arcade.StaticGroup;
+
     preload ()
     {
-        this.load.setBaseURL('http://labs.phaser.io');
-    
-        this.load.image('sky', 'assets/skies/space3.png');
-        this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-        this.load.image('red', 'assets/particles/red.png');
+        console.log("scene 1 preload");
+        //load ship asset
+        this.load.image('ship', require('../assets/ship.png'));
+        //load wall assets
+        this.load.image('wallV', require('../assets/wallVertical.png'));
+        this.load.image('wallH', require('../assets/wallHorizontal.png'));
+
     }
     
     create ()
     {
+        console.log("scene 1 create");
+        //Create empty static group for walls
+        this.walls = this.physics.add.staticGroup();
+        //create walls in group
+        this.walls.create(10, 170, 'wallV');
+        this.walls.create(170, 340, 'wallH');
+        
 
-        //fancy phaser animation
-        this.add.image(400, 300, 'sky');
-    
-        var particles = this.add.particles('red');
-    
-        var emitter = particles.createEmitter({
-            speed: 100,
-            scale: { start: 1, end: 0 },
-            blendMode: 'ADD'
-        });
-    
-        var logo = this.physics.add.image(400, 100, 'logo');
-    
-        logo.setVelocity(100, 200);
-        logo.setBounce(1, 1);
-        logo.setCollideWorldBounds(true);
-    
-        emitter.startFollow(logo);
+        // Load the ship sprite to test
+        this.player = this.physics.add.sprite(250, 170, 'ship');
+        this.player.setScale(0.1,0.1);
+
+        // Start with controls
+        this.arrow = this.input.keyboard.createCursorKeys();
 
         //The button to send us to main menu
         var menuBtn = this.add.text(
@@ -48,5 +54,39 @@ export default class Scene1 extends Phaser.Scene {
         menuBtn.setInteractive();
 
         menuBtn.on('pointerup', ()=>{this.scene.start('MainMenu')});
+    }
+
+    update() {
+        // add collision detection
+        this.physics.collide(this.player, this.walls);
+
+        //update player based on input
+        this.movePlayer();
+
+        //decelerate
+        this.player.body.velocity.x*=0.99;
+        this.player.body.velocity.y*=0.99;
+        //stop if too slow
+        if (this.player.body.velocity.x<10 && this.player.body.velocity.x>-10){
+            this.player.body.velocity.x=0;
+        }
+        if (this.player.body.velocity.y<10 && this.player.body.velocity.y>-10){
+            this.player.body.velocity.y=0;
+        }
+    }
+
+    movePlayer() {
+        //left-right arrows give left-right speed
+        if(this.arrow.left.isDown) {
+            this.player.body.velocity.x=-200;
+        } else if(this.arrow.right.isDown){
+            this.player.body.velocity.x=200;
+        }
+        //up-down arrows give up-down speed
+        if(this.arrow.up.isDown) {
+            this.player.body.velocity.y=-200;
+        } else if(this.arrow.down.isDown){
+            this.player.body.velocity.y=200;
+        }
     }
 }
