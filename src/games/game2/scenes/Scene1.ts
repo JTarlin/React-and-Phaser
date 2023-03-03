@@ -143,10 +143,27 @@ export default class Scene1 extends Phaser.Scene {
     }
 
     takeCoin() {
-        const newX = Phaser.Math.RND.between(20, 780);
-        const newY = Phaser.Math.RND.between(20, 580);
-        this.coin.setPosition(newX, newY);
+        this.updateCoinPos();
         this.score+=5;
         this.scoreLabel.setText('Score: '+this.score);
+    }
+
+    updateCoinPos() {
+        let positions = [
+            {x:70, y:70},
+            {x:60, y:250},
+            {x:690, y:150},
+            {x:400, y:210},
+            {x:700, y:310},
+            {x:420, y:320},
+            {x:150, y:500},
+            {x:650, y:550},
+        ]
+
+        //filter out current coin pos
+        positions = positions.filter(coin=>coin.x !== this.coin.x);
+
+        let newPos = Phaser.Math.RND.pick(positions);
+        this.coin.setPosition(newPos.x,newPos.y);
     }
 }
