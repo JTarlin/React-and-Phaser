@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import LoadScreen from './scenes/LoadScreen';
 import MainMenu from './scenes/MainMenu';
-import Scene1 from './scenes/Scene1';
+import Play from './scenes/Play';
 
 export const config = {
     parent: 'gameParent',
@@ -14,7 +15,7 @@ export const config = {
         }
     },
     backgroundColor: '#4aa138',
-    scene: [MainMenu]
+    scene: [LoadScreen]
 };
 
-export const scenes = [MainMenu, Scene1]
+export const scenes = [LoadScreen, MainMenu, Play]

@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
 
-export default class Scene1 extends Phaser.Scene {
+import Keyboard from '../ts/keyboard';
+
+export default class Play extends Phaser.Scene {
 
     //player object
     private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     //controls
-    private arrow!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private keys!: Keyboard;
     //walls
     private walls!: Phaser.Physics.Arcade.StaticGroup;
     //coin
@@ -15,21 +17,6 @@ export default class Scene1 extends Phaser.Scene {
     private score!: number;
     //enemies
     private enemies!: Phaser.Physics.Arcade.Group;
-
-    preload ()
-    {
-        console.log("scene 1 preload");
-        //load our character asset
-        this.load.image('lilguy', require('../../shared/assets/player.png'));
-        //load wall assets
-        this.load.image('wallV', require('../../shared/assets/wallVertical.png'));
-        this.load.image('wallH', require('../../shared/assets/wallHorizontal.png'));
-        //load coin asset
-        this.load.image('coin', require('../../shared/assets/coin.png'));
-        //enemies
-        this.load.image('enemy', require('../../shared/assets/enemy.png'));
-
-    }
     
     create ()
     {
@@ -68,6 +55,9 @@ export default class Scene1 extends Phaser.Scene {
         this.coin = this.physics.add.sprite(400, 210, 'coin');
         this.coin.body.setAllowGravity(false);
 
+        //Add controls
+        this.keys = new Keyboard(this)
+
         //create score tracker
         this.scoreLabel = this.add.text(500, 25, 'Score: 0',
             {font: '18px Arial', color: '#fff'}).setOrigin(0.5, 0.5);
@@ -79,10 +69,7 @@ export default class Scene1 extends Phaser.Scene {
             delay:2200,
             callback: ()=>this.addEnemy(),
             loop:true,
-        })
-
-        // Start with controls
-        this.arrow = this.input.keyboard.createCursorKeys();
+        });
 
         //The button to send us to main menu
         var menuBtn = this.add.text(
@@ -98,7 +85,7 @@ export default class Scene1 extends Phaser.Scene {
 
         menuBtn.setInteractive();
 
-        menuBtn.on('pointerup', ()=>{this.scene.start('MainMenu')});
+        menuBtn.on('pointerup', ()=>{this.scene.start('MainMenu', {score: this.score})});
     }
 
     update() {
@@ -127,16 +114,18 @@ export default class Scene1 extends Phaser.Scene {
 
     movePlayer() {
         //left-right arrows give left-right speed
-        if(this.arrow.left.isDown) {
+        if(this.keys.getLeft()) {
             this.player.body.velocity.x=-200;
-        } else if(this.arrow.right.isDown){
+        } else if(this.keys.getRight()){
             this.player.body.velocity.x=200;
         } else {
             this.player.body.velocity.x*=0.9;
         }
         //up-down arrows give up-down speed
-        if(this.arrow.up.isDown && this.player.body.onFloor()) {
+        if(this.keys.getUp() && this.player.body.onFloor()) {
             this.player.body.velocity.y=-350;
+        } else if(this.keys.getDown()) {
+            this.player.body.velocity.y+=20;
         }
     }
 
@@ -158,7 +147,7 @@ export default class Scene1 extends Phaser.Scene {
 
         //change to menu again
         setTimeout(()=>{
-            this.scene.start('MainMenu');
+            this.scene.start('MainMenu', {score: this.score});
         }, 1500);
     }
 
