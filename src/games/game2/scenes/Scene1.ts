@@ -13,6 +13,8 @@ export default class Scene1 extends Phaser.Scene {
     //score
     private scoreLabel!: Phaser.GameObjects.Text;
     private score!: number;
+    //enemies
+    private enemies!: Phaser.Physics.Arcade.Group;
 
     preload ()
     {
@@ -24,6 +26,8 @@ export default class Scene1 extends Phaser.Scene {
         this.load.image('wallH', require('../../shared/assets/wallHorizontal.png'));
         //load coin asset
         this.load.image('coin', require('../../shared/assets/coin.png'));
+        //enemies
+        this.load.image('enemy', require('../../shared/assets/enemy.png'));
 
     }
     
@@ -69,6 +73,14 @@ export default class Scene1 extends Phaser.Scene {
             {font: '18px Arial', color: '#fff'}).setOrigin(0.5, 0.5);
         this.score=0;
 
+        //enemies
+        this.enemies = this.physics.add.group();
+        this.time.addEvent({
+            delay:2200,
+            callback: ()=>this.addEnemy(),
+            loop:true,
+        })
+
         // Start with controls
         this.arrow = this.input.keyboard.createCursorKeys();
 
@@ -92,6 +104,7 @@ export default class Scene1 extends Phaser.Scene {
     update() {
         // add collision detection
         this.physics.collide(this.player, this.walls);
+        this.physics.collide(this.enemies, this.walls);
 
         //update player based on input
         if (this.player){
@@ -104,6 +117,10 @@ export default class Scene1 extends Phaser.Scene {
 
             if(this.physics.overlap(this.player, this.coin)){
                 this.takeCoin();
+            }
+
+            if(this.physics.overlap(this.player, this.enemies)){
+                this.gameOver();
             }
         }
     }
@@ -136,6 +153,9 @@ export default class Scene1 extends Phaser.Scene {
         ).setOrigin(0.5, 0.5);
         gameOver.setFontSize(100);
 
+        //hide player
+        this.player.setAlpha(0);
+
         //change to menu again
         setTimeout(()=>{
             this.scene.start('MainMenu');
@@ -165,5 +185,17 @@ export default class Scene1 extends Phaser.Scene {
 
         let newPos = Phaser.Math.RND.pick(positions);
         this.coin.setPosition(newPos.x,newPos.y);
+    }
+
+    addEnemy(){
+        let enemy = this.enemies.create(400,-10,'enemy');
+
+        enemy.body.velocity.x = Phaser.Math.RND.pick([-100,100]);
+        enemy.body.bounce.x=1;
+
+        this.time.addEvent({
+            delay:10000,
+            callback: ()=>enemy.destroy(),
+        })
     }
 }
