@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import Scene1 from './scenes/scene2';
+import MainMenu from './scenes/MainMenu';
+import Scene1 from './scenes/Scene1';
 
 export const config = {
     parent: 'gameParent',
@@ -12,7 +13,8 @@ export const config = {
             gravity: { y: 200 }
         }
     },
-    scene: [Scene1]
+    backgroundColor: '#4aa138',
+    scene: [MainMenu]
 };
 
-export const scenes = [Scene1]
+export const scenes = [MainMenu, Scene1]

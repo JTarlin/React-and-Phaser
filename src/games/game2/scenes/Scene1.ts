@@ -15,7 +15,7 @@ export default class Scene1 extends Phaser.Scene {
     {
         console.log("scene 1 preload");
         //load ship asset
-        this.load.image('ship', require('../../shared/assets/ship.png'));
+        this.load.image('lilguy', require('../../shared/assets/player.png'));
         //load wall assets
         this.load.image('wallV', require('../../shared/assets/wallVertical.png'));
         this.load.image('wallH', require('../../shared/assets/wallHorizontal.png'));
@@ -25,6 +25,8 @@ export default class Scene1 extends Phaser.Scene {
     create ()
     {
         console.log("scene 1 create");
+        //add physics to scene
+        this.physics.world.gravity.y = 400;
         //Create empty static group for walls
         this.walls = this.physics.add.staticGroup();
         //create walls in group
@@ -33,8 +35,7 @@ export default class Scene1 extends Phaser.Scene {
         
 
         // Load the ship sprite to test
-        this.player = this.physics.add.sprite(250, 170, 'ship');
-        this.player.setScale(0.1,0.1);
+        this.player = this.physics.add.sprite(250, 170, 'lilguy');
 
         // Start with controls
         this.arrow = this.input.keyboard.createCursorKeys();
@@ -62,17 +63,6 @@ export default class Scene1 extends Phaser.Scene {
 
         //update player based on input
         this.movePlayer();
-
-        //decelerate
-        this.player.body.velocity.x*=0.99;
-        this.player.body.velocity.y*=0.99;
-        //stop if too slow
-        if (this.player.body.velocity.x<10 && this.player.body.velocity.x>-10){
-            this.player.body.velocity.x=0;
-        }
-        if (this.player.body.velocity.y<10 && this.player.body.velocity.y>-10){
-            this.player.body.velocity.y=0;
-        }
     }
 
     movePlayer() {
@@ -81,12 +71,13 @@ export default class Scene1 extends Phaser.Scene {
             this.player.body.velocity.x=-200;
         } else if(this.arrow.right.isDown){
             this.player.body.velocity.x=200;
+        } else {
+            this.player.body.velocity.x*=0.9;
         }
         //up-down arrows give up-down speed
-        if(this.arrow.up.isDown) {
-            this.player.body.velocity.y=-200;
-        } else if(this.arrow.down.isDown){
-            this.player.body.velocity.y=200;
+        const body = this.player.body as Phaser.Physics.Arcade.Body;
+        if(this.arrow.up.isDown && body.onFloor()) {
+            this.player.body.velocity.y=-300;
         }
     }
 }
