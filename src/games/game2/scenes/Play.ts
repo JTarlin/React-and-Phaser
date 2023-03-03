@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import Keyboard from '../ts/keyboard';
+import Keyboard from '../ts/Keyboard';
 
 export default class Play extends Phaser.Scene {
 
@@ -26,27 +26,22 @@ export default class Play extends Phaser.Scene {
         //Create empty static group for walls
         this.walls = this.physics.add.staticGroup();
         //create walls in group
-        //vertical
-        //left
-        this.walls.create(10, 170, 'wallV');
-        this.walls.create(10, 500, 'wallV');
-        //right
-        this.walls.create(790, 170, 'wallV');
-        this.walls.create(790, 500, 'wallV');
-        //horizontal
-        //top
-        this.walls.create(650, 10, 'wallH');
-        this.walls.create(150, 10, 'wallH');
-        //middle
-        this.walls.create(100, 150, 'wallH');
-        this.walls.create(700, 200, 'wallH');
-        this.walls.create(400, 270, 'wallH');
-        this.walls.create(170, 340, 'wallH');
-        this.walls.create(460, 400, 'wallH');
-        this.walls.create(400, 520, 'wallH');
-        //bottom
-        this.walls.create(650, 590, 'wallH');
-        this.walls.create(150, 590, 'wallH');
+        
+        // //horizontal
+        // //top
+        // this.walls.create(650, 10, 'wallH');
+        // this.walls.create(150, 10, 'wallH');
+        // //middle
+        // this.walls.create(100, 150, 'wallH');
+        // this.walls.create(700, 200, 'wallH');
+        // this.walls.create(400, 270, 'wallH');
+        // this.walls.create(170, 340, 'wallH');
+        // this.walls.create(460, 400, 'wallH');
+        // this.walls.create(400, 520, 'wallH');
+        // //bottom
+        // this.walls.create(650, 590, 'wallH');
+        // this.walls.create(150, 590, 'wallH');
+        this.buildLevel();
         
         // Load the character sprite sprite
         this.player = this.physics.add.sprite(250, 170, 'lilguy');
@@ -186,5 +181,31 @@ export default class Play extends Phaser.Scene {
             delay:10000,
             callback: ()=>enemy.destroy(),
         })
+    }
+
+    buildLevel() {
+        //empty the map before rebuilding
+        if(this.walls){
+            this.walls.children.each((wall)=>{wall.destroy()});
+        }
+        //vertical
+        //left
+        this.walls.create(10, 170, 'wallV');
+        this.walls.create(10, 500, 'wallV');
+        //right
+        this.walls.create(790, 170, 'wallV');
+        this.walls.create(790, 500, 'wallV');
+        //horizontal
+        let layouts = [
+            [{x:0, y:50},{x:800, y:50},{x:400, y:100},{x:0, y:150},{x:800, y:150}],
+            [{x:0, y:50},{x:400, y:100},{x:800, y:150}],
+        ]
+
+        for(let i=0;i<3;i++){
+            let layout = Phaser.Math.RND.pick(layouts);
+            for(let j=0;j<layout.length;j++){
+                this.walls.create(layout[j].x, layout[j].y+200*i, 'wallH');
+            }
+        }
     }
 }
