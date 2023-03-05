@@ -17,6 +17,11 @@ export default class Play extends Phaser.Scene {
     private score!: number;
     //enemies
     private enemies!: Phaser.Physics.Arcade.Group;
+    //sounds
+    private jumpSound!: Phaser.Sound.BaseSound;
+    private coinSound!: Phaser.Sound.BaseSound;
+    private deadSound!: Phaser.Sound.BaseSound;
+    private musicWarped!: Phaser.Sound.BaseSound;
     
     create ()
     {
@@ -25,26 +30,30 @@ export default class Play extends Phaser.Scene {
         this.physics.world.gravity.y = 400;
         //Create empty static group for walls
         this.walls = this.physics.add.staticGroup();
-        //create walls in group
-        
-        // //horizontal
-        // //top
-        // this.walls.create(650, 10, 'wallH');
-        // this.walls.create(150, 10, 'wallH');
-        // //middle
-        // this.walls.create(100, 150, 'wallH');
-        // this.walls.create(700, 200, 'wallH');
-        // this.walls.create(400, 270, 'wallH');
-        // this.walls.create(170, 340, 'wallH');
-        // this.walls.create(460, 400, 'wallH');
-        // this.walls.create(400, 520, 'wallH');
-        // //bottom
-        // this.walls.create(650, 590, 'wallH');
-        // this.walls.create(150, 590, 'wallH');
         this.buildLevel();
+
+        //Sounds
+        this.jumpSound = this.sound.add('jump');
+        this.coinSound = this.sound.add('coin');
+        this.deadSound = this.sound.add('dead');
+        this.musicWarped = this.sound.add('music');
+        this.musicWarped.play({loop:true});
         
         // Load the character sprite sprite
         this.player = this.physics.add.sprite(250, 170, 'lilguy');
+        //anims
+        this.anims.create({
+            key: 'right',
+            frames:this.anims.generateFrameNumbers('lilguy',{frames: [1,2]}),
+            frameRate: 8,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: 'left',
+            frames:this.anims.generateFrameNumbers('lilguy',{frames: [3,4]}),
+            frameRate: 8,
+            repeat: -1,
+        });
 
         //coin sprite
         this.coin = this.physics.add.sprite(400, 210, 'coin');
@@ -80,7 +89,10 @@ export default class Play extends Phaser.Scene {
 
         menuBtn.setInteractive();
 
-        menuBtn.on('pointerup', ()=>{this.scene.start('MainMenu', {score: this.score})});
+        menuBtn.on('pointerup', ()=>{
+            this.musicWarped.stop();
+            this.scene.start('MainMenu', {score: this.score});
+        });
     }
 
     update() {
@@ -94,7 +106,7 @@ export default class Play extends Phaser.Scene {
 
             //destroy players that fell out
             if(this.player.body.position.y>600){
-                this.gameOver();
+                this.player.body.position.y=0;
             }
 
             if(this.physics.overlap(this.player, this.coin)){
@@ -111,14 +123,18 @@ export default class Play extends Phaser.Scene {
         //left-right arrows give left-right speed
         if(this.keys.getLeft()) {
             this.player.body.velocity.x=-200;
+            this.player.anims.play('left', true);
         } else if(this.keys.getRight()){
             this.player.body.velocity.x=200;
+            this.player.anims.play('right', true);
         } else {
             this.player.body.velocity.x*=0.9;
+            this.player.setFrame(0);
         }
         //up-down arrows give up-down speed
         if(this.keys.getUp() && this.player.body.onFloor()) {
             this.player.body.velocity.y=-350;
+            this.jumpSound.play();
         } else if(this.keys.getDown()) {
             this.player.body.velocity.y+=20;
         }
@@ -137,16 +153,20 @@ export default class Play extends Phaser.Scene {
         ).setOrigin(0.5, 0.5);
         gameOver.setFontSize(100);
 
+        this.deadSound.play();
+
         //hide player
         this.player.setAlpha(0);
 
         //change to menu again
         setTimeout(()=>{
+            this.musicWarped.stop();
             this.scene.start('MainMenu', {score: this.score});
         }, 1500);
     }
 
     takeCoin() {
+        this.coinSound.play();
         this.updateCoinPos();
         this.score+=5;
         this.scoreLabel.setText('Score: '+this.score);
@@ -200,8 +220,9 @@ export default class Play extends Phaser.Scene {
             [{x:0, y:50},{x:800, y:50},{x:400, y:100},{x:0, y:150},{x:800, y:150}],
             [{x:0, y:50},{x:400, y:100},{x:800, y:150}],
         ]
-
-        for(let i=0;i<3;i++){
+        //place one wall layout for each of the three layers of the level
+        const levelLayers = 3;
+        for(let i=0;i<levelLayers;i++){
             let layout = Phaser.Math.RND.pick(layouts);
             for(let j=0;j<layout.length;j++){
                 this.walls.create(layout[j].x, layout[j].y+200*i, 'wallH');
