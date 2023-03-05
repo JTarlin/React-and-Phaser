@@ -9,7 +9,7 @@ export default class Play extends Phaser.Scene {
     //controls
     private keys!: Keyboard;
     //walls
-    private walls!: Phaser.Physics.Arcade.StaticGroup;
+    private walls!: Phaser.Tilemaps.TilemapLayer;
     //coin
     private coin!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     //score
@@ -17,19 +17,21 @@ export default class Play extends Phaser.Scene {
     private score!: number;
     //enemies
     private enemies!: Phaser.Physics.Arcade.Group;
+    private nextEnemy: number = 0;
     //sounds
     private jumpSound!: Phaser.Sound.BaseSound;
     private coinSound!: Phaser.Sound.BaseSound;
     private deadSound!: Phaser.Sound.BaseSound;
     private musicWarped!: Phaser.Sound.BaseSound;
+    //Particle emitter
+    private emitter!: Phaser.GameObjects.Particles.ParticleEmitter;
     
     create ()
     {
         console.log("scene 1 create");
         //add physics to scene
         this.physics.world.gravity.y = 400;
-        //Create empty static group for walls
-        this.walls = this.physics.add.staticGroup();
+        //Build level using tilemap
         this.buildLevel();
 
         //Sounds
@@ -58,6 +60,22 @@ export default class Play extends Phaser.Scene {
         //coin sprite
         this.coin = this.physics.add.sprite(400, 210, 'coin');
         this.coin.body.setAllowGravity(false);
+        this.coin.setScale(0);
+        this.tweens.add({
+            targets:this.coin,
+            scale:1,
+            duration:300,
+        });
+
+        //Particle effect
+        let particles = this.add.particles('pixel');
+        this.emitter = particles.createEmitter({
+            quantity:15,
+            speed: {min: -150, max:150},
+            scale: {start:2,end:0.1},
+            lifespan:800,
+            on:false,
+        })
 
         //Add controls
         this.keys = new Keyboard(this)
@@ -69,11 +87,6 @@ export default class Play extends Phaser.Scene {
 
         //enemies
         this.enemies = this.physics.add.group();
-        this.time.addEvent({
-            delay:2200,
-            callback: ()=>this.addEnemy(),
-            loop:true,
-        });
 
         //The button to send us to main menu
         var menuBtn = this.add.text(
@@ -86,11 +99,10 @@ export default class Play extends Phaser.Scene {
             }
         ).setOrigin(0.5, 0.5);
         menuBtn.setFontSize(20);
-
         menuBtn.setInteractive();
-
         menuBtn.on('pointerup', ()=>{
             this.musicWarped.stop();
+            this.setHighScore();
             this.scene.start('MainMenu', {score: this.score});
         });
     }
@@ -101,7 +113,7 @@ export default class Play extends Phaser.Scene {
         this.physics.collide(this.enemies, this.walls);
 
         //update player based on input
-        if (this.player){
+        if (this.player.active){
             this.movePlayer();
 
             //destroy players that fell out
@@ -116,6 +128,19 @@ export default class Play extends Phaser.Scene {
             if(this.physics.overlap(this.player, this.enemies)){
                 this.gameOver();
             }
+        }
+
+        //Control enemy spawning
+        let now = Date.now();
+        
+        if(this.nextEnemy < now){
+            const startDifficulty = 4000;
+            const endDifficulty = 1000;
+            const endScore = 100;
+            //Enemies spawn faster and faster as game goes on
+            let enemyDelay = startDifficulty-(startDifficulty-endDifficulty)*(this.score/endScore);
+            this.addEnemy();
+            this.nextEnemy = now+enemyDelay;
         }
     }
 
@@ -141,6 +166,16 @@ export default class Play extends Phaser.Scene {
     }
 
     gameOver() {
+        //kill player
+        this.deadSound.play();
+        this.cameras.main.shake(200, 0.02);
+        this.emitter.explode(15, this.player.x, this.player.y);
+        //hide player
+        this.player.destroy();
+
+        //set high score
+        this.setHighScore();
+
         //Display 'Game Over' text
         var gameOver = this.add.text(
             400, 
@@ -153,11 +188,6 @@ export default class Play extends Phaser.Scene {
         ).setOrigin(0.5, 0.5);
         gameOver.setFontSize(100);
 
-        this.deadSound.play();
-
-        //hide player
-        this.player.setAlpha(0);
-
         //change to menu again
         setTimeout(()=>{
             this.musicWarped.stop();
@@ -167,6 +197,12 @@ export default class Play extends Phaser.Scene {
 
     takeCoin() {
         this.coinSound.play();
+        this.tweens.add({
+            targets: this.player,
+            scale: 1.3,
+            duration: 100,
+            yoyo: true,
+        })
         this.updateCoinPos();
         this.score+=5;
         this.scoreLabel.setText('Score: '+this.score);
@@ -187,6 +223,12 @@ export default class Play extends Phaser.Scene {
         //filter out current coin pos
         positions = positions.filter(coin=>coin.x !== this.coin.x);
 
+        this.coin.setScale(0);
+        this.tweens.add({
+            targets:this.coin,
+            scale:1,
+            duration:300,
+        });
         let newPos = Phaser.Math.RND.pick(positions);
         this.coin.setPosition(newPos.x,newPos.y);
     }
@@ -204,29 +246,19 @@ export default class Play extends Phaser.Scene {
     }
 
     buildLevel() {
-        //empty the map before rebuilding
-        if(this.walls){
-            this.walls.children.each((wall)=>{wall.destroy()});
+        let map = this.add.tilemap('map');
+        let tileset = map.addTilesetImage('tileset', 'tileset');
+        this.walls = map.createLayer('Tile Layer 1', tileset);
+
+        this.walls.setCollision(1);
+    }
+
+    setHighScore() {
+        if(localStorage.getItem('highScore')==null){
+            localStorage.setItem('highScore','0');
         }
-        //vertical
-        //left
-        this.walls.create(10, 170, 'wallV');
-        this.walls.create(10, 500, 'wallV');
-        //right
-        this.walls.create(790, 170, 'wallV');
-        this.walls.create(790, 500, 'wallV');
-        //horizontal
-        let layouts = [
-            [{x:0, y:50},{x:800, y:50},{x:400, y:100},{x:0, y:150},{x:800, y:150}],
-            [{x:0, y:50},{x:400, y:100},{x:800, y:150}],
-        ]
-        //place one wall layout for each of the three layers of the level
-        const levelLayers = 3;
-        for(let i=0;i<levelLayers;i++){
-            let layout = Phaser.Math.RND.pick(layouts);
-            for(let j=0;j<layout.length;j++){
-                this.walls.create(layout[j].x, layout[j].y+200*i, 'wallH');
-            }
+        if(this.score > parseInt(localStorage.getItem('highScore')!)){
+            localStorage.setItem('highScore',`${this.score}`);
         }
     }
 }
